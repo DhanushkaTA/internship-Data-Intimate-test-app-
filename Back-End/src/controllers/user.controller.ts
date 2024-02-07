@@ -3,6 +3,7 @@ import {CustomResponse} from "../dtos/custom.response";
 import jwt, {Secret} from "jsonwebtoken";
 import * as process from "process";
 import UserModel from "../models/user.model";
+import {where} from "sequelize";
 
 export const saveUser = async (req:express.Request ,res:any) => {
     try {
@@ -29,6 +30,24 @@ export const saveUser = async (req:express.Request ,res:any) => {
 
 export const deleteUser = async (req:express.Request, res:any) => {
     try {
+
+        // let query = req.query;
+        // let id = query.id;
+
+        await UserModel.destroy({where: {nic: req.query.id}})
+            .then((deleteRows) => {
+                // console.log(deleteRows)
+                if (deleteRows>0){
+                    res.status(200).send(
+                        new CustomResponse(200,"User deleted successfully")
+                    )
+                }
+            })
+            .catch((error) => {
+                res.status(500).json(
+                    new CustomResponse(500,`Error : ${error}`)
+                )
+            })
 
     }catch (error){
         res.status(500).json(
