@@ -2,11 +2,23 @@ import express from "express";
 import {CustomResponse} from "../dtos/custom.response";
 import jwt, {Secret} from "jsonwebtoken";
 import * as process from "process";
+import UserModel from "../models/user.model";
 
 export const saveUser = async (req:express.Request ,res:any) => {
     try {
 
         let user = req.body;
+
+        let model = await UserModel.create(user);
+
+        if(model){
+            model.dataValues.password="";
+            res.status(201).json(
+                new CustomResponse(201,"User Saved!!",model.dataValues)
+            )
+        }
+        // console.log(model);
+        // console.log(model.dataValues);
 
     }catch (error){
         res.status(500).json(

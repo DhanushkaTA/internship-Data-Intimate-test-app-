@@ -5,7 +5,7 @@ import express from 'express';
 import cors from "cors";
 import bodyParser from "body-parser";
 import * as process from "process";
-import CustomerRoutes from "./routes/user.routes";
+import UserRoutes from "./routes/user.routes";
 import sequelize from "./db";
 
 
@@ -17,7 +17,7 @@ app.use(cors({
 
 app.use(bodyParser.json());
 
-app.use('/customer',CustomerRoutes);
+app.use('/user',UserRoutes);
 
 // sequelize.sync({force: false})
 //     .then(() => {
