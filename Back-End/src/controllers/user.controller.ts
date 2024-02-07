@@ -74,16 +74,16 @@ export const getAll = async (req:express.Request, res:any) => {
 
         console.log("awaaaaaaa")
 
-        let newVar = await UserModel.findAll();
+        let userList = await UserModel.findAll();
 
         // console.log(newVar)
 
-        newVar.map(value => {
+        userList.map(value => {
             value.dataValues.password="";
         })
 
         res.status(200).json(
-            new CustomResponse(200,`Get All Users`,newVar)
+            new CustomResponse(200,`Get All Users`,userList)
         )
 
     }catch (error){
@@ -95,6 +95,19 @@ export const getAll = async (req:express.Request, res:any) => {
 
 export const getUser = async (req:express.Request, res:any) => {
     try {
+
+        let user = await UserModel.findOne({where: {nic: req.params.id}});
+
+        if (user){
+            user.dataValues.password="";
+            res.status(200).json(
+                new CustomResponse(200,`User found successfully`,user)
+            )
+        }else {
+            res.status(404).json(
+                new CustomResponse(404,`User not found`)
+            )
+        }
 
     }catch (error){
         res.status(500).json(
