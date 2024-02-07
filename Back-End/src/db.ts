@@ -1,10 +1,28 @@
 import {Sequelize} from "sequelize";
 import * as process from "process";
 
-let sequelize = new Sequelize(process.env.DB_NAME as string, process.env.DB_USER as string, process.env.DB_PASSWORD as string,{
+declare module 'sequelize' {
+    interface Options {
+        createDatabaseIfNotExist?: boolean;
+    }
+}
+
+
+let sequelize = new Sequelize(
+    process.env.DB_NAME as string, process.env.DB_USER as string, process.env.DB_PASSWORD as string,{
+
     host: process.env.DB_HOST,
-    dialect: 'mysql'
-});
+    dialect: 'mysql',
+        logging:true,
+        pool:{
+            max: 10,
+            min: 0,
+            acquire: 30000,
+            idle: 10000
+        },
+        createDatabaseIfNotExist: true
+
+    });
 
 sequelize.sync({force: false})
     .then(() => {
