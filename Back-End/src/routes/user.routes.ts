@@ -11,7 +11,9 @@ router.get('/all', VerifyToken.verifyToken, UserController.getAll);
 
 router.post('/save',UserController.saveUser);
 
-router.put('/update',UserController.updateUser);
+router.put('/update', VerifyToken.verifyToken, UserController.updateUser);
+
+router.put('/update/password', VerifyToken.verifyToken, UserController.updatePassword);
 
 router.delete('/delete', VerifyToken.verifyToken, UserController.deleteUser);// query string -> ?id=
 

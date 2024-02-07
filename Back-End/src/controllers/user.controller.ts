@@ -119,6 +119,89 @@ export const getUser = async (req:express.Request, res:any) => {
 export const updateUser = async (req:express.Request, res:any) => {
     try {
 
+        let rowCounts = await UserModel.update(req.body,{where:{nic: req.body.nic}});
+
+
+        // console.log(rowCounts)
+        if (rowCounts[0]>0){
+            res.status(200).send(
+                new CustomResponse(200,"User update successfully",)
+            )
+        }else {
+            res.status(500).send(
+                new CustomResponse(500,"User not update")
+            )
+        }
+
+    }catch (error){
+        res.status(500).json(
+            new CustomResponse(500,`Error : ${error}`)
+        )
+    }
+}
+
+export const updatePassword = async (req: express.Request, res:any) => {
+    try {
+
+        console.log(res.tokenData.user.nic)
+
+        let user = await UserModel.findOne({where: {nic: res.tokenData.user.nic}});
+
+        if (user){
+
+            let isMache :boolean = await bcrypt.compare(req.body.oldPassword, user.dataValues.password);
+
+            if (isMache){
+
+                bcrypt.hash(req.body.password, 8, async (err, hash :string) =>{
+
+                    if (err){
+                        res.status(500).json(
+                            new CustomResponse(500,`Something went wrong : ${err}`)
+                        )
+                    }
+
+                    await UserModel.update({password: hash},{where:{nic: res.tokenData.user.nic}})
+                        .then((row) => {
+                            if (row[0]>0){
+                                res.status(200).send(
+                                    new CustomResponse(200,"Password update successfully",)
+                                )
+                            }
+                        })
+                        .catch((error) => {
+                            res.status(500).json(
+                                new CustomResponse(500,`Error : ${error}`)
+                            )
+                        })
+
+                    // if (row[0]>0){
+                    //     res.status(200).send(
+                    //         new CustomResponse(200,"Password update successfully",)
+                    //     )
+                    // }else {
+                    //     res.status(500).send(
+                    //         new CustomResponse(500,"Password not update")
+                    //     )
+                    // }
+
+                })
+
+            }else {
+                res.status(401).json(
+                    new CustomResponse(401,`Invalid Password!!!`)
+                )
+            }
+
+
+        }else {
+            res.status(404).json(
+                new CustomResponse(404,`User not found!!!`)
+            )
+        }
+
+
+
     }catch (error){
         res.status(500).json(
             new CustomResponse(500,`Error : ${error}`)
