@@ -72,9 +72,20 @@ export const deleteUser = async (req:express.Request, res:any) => {
 export const getAll = async (req:express.Request, res:any) => {
     try {
 
+        console.log("awaaaaaaa")
+
         let newVar = await UserModel.findAll();
 
-        console.log(newVar)
+        // console.log(newVar)
+
+        newVar.map(value => {
+            value.dataValues.password="";
+        })
+
+        res.status(200).json(
+            new CustomResponse(200,`Get All Users`,newVar)
+        )
+
     }catch (error){
         res.status(500).json(
             new CustomResponse(500,`Error : ${error}`)

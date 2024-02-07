@@ -7,7 +7,7 @@ let router = express.Router();
 
 router.get('/get/:id',UserController.getUser);
 
-router.get('/get/all', VerifyToken.verifyToken, UserController.getAll);
+router.get('/all', VerifyToken.verifyToken, UserController.getAll);
 
 router.post('/save',UserController.saveUser);
 
