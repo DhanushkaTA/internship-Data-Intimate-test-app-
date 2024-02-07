@@ -36,6 +36,10 @@ const UserModel = sequelize.define("user",{
         validate:{
             isNumeric: true
         }
+    },
+    password:{
+        type: DataTypes.STRING,
+        allowNull:false
     }
 })
 

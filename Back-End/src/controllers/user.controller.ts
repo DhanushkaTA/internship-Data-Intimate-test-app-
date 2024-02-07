@@ -4,22 +4,29 @@ import jwt, {Secret} from "jsonwebtoken";
 import * as process from "process";
 import UserModel from "../models/user.model";
 import {where} from "sequelize";
+import bcrypt from "bcryptjs"
 
 export const saveUser = async (req:express.Request ,res:any) => {
     try {
 
         let user = req.body;
 
-        let model = await UserModel.create(user);
+        bcrypt.hash(user.password, 8, async (error, hash:string) => {
 
-        if(model){
-            model.dataValues.password="";
-            res.status(201).json(
-                new CustomResponse(201,"User Saved!!",model.dataValues)
-            )
-        }
-        // console.log(model);
-        // console.log(model.dataValues);
+            user.password=hash;
+
+            let model = await UserModel.create(user);
+
+            if(model){
+                model.dataValues.password="";
+                res.status(201).json(
+                    new CustomResponse(201,"User Saved!!",model.dataValues)
+                )
+            }
+            // console.log(model);
+            // console.log(model.dataValues);
+
+        })
 
     }catch (error){
         res.status(500).json(
@@ -35,13 +42,19 @@ export const deleteUser = async (req:express.Request, res:any) => {
         // let id = query.id;
 
         await UserModel.destroy({where: {nic: req.query.id}})
-            .then((deleteRows) => {
-                // console.log(deleteRows)
+            .then((deleteRows :number) => {
+
+                console.log(deleteRows)
                 if (deleteRows>0){
                     res.status(200).send(
                         new CustomResponse(200,"User deleted successfully")
                     )
+                }else {
+                    res.status(500).json(
+                        new CustomResponse(500,`Something went wrong.Please check the nic again`)
+                    )
                 }
+
             })
             .catch((error) => {
                 res.status(500).json(
@@ -59,6 +72,9 @@ export const deleteUser = async (req:express.Request, res:any) => {
 export const getAll = async (req:express.Request, res:any) => {
     try {
 
+        let newVar = await UserModel.findAll();
+
+        console.log(newVar)
     }catch (error){
         res.status(500).json(
             new CustomResponse(500,`Error : ${error}`)
@@ -89,12 +105,30 @@ export const updateUser = async (req:express.Request, res:any) => {
 export const authUser = async (req:express.Request, res:any) => {
     try {
 
-        //logic to get user from db
-        let user=null;
+        let user= await UserModel.findOne({where: {username: req.body.username}});
+
+        // UserModel.findOne({where: {username: req.body.username}})
+        //     .then((success) => {
+        //
+        //     console.log(success)
+        //
+        //     })
+        //     .catch((error) => {
+        //         res.status(500).json(
+        //             new CustomResponse(500,`Error : ${error}`)
+        //         )
+        //     })
 
         if (user){
+            let isMache: boolean = await bcrypt.compare(req.body.password, user.dataValues.password);
 
-            generateToken(user, res);
+            if (isMache){
+                await generateToken(user.dataValues, res);
+            }else {
+                res.status(401).json(
+                    new CustomResponse(401,"Wrong Password!!!")
+                )
+            }
 
         }else {
             res.status(404).send(
@@ -114,6 +148,7 @@ const generateToken = async (user:any,res:any)=> {
     let expiresIn = "1w";
 
     jwt.sign({user}, process.env.SECRET as Secret,{expiresIn},(error:any, token:any) => {
+
         if (error){
             res.status(500).send(
                 new CustomResponse(500,`Something went wrong : ${error}`)
