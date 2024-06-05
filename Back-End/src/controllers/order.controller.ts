@@ -5,52 +5,57 @@ import OrderModel from "../models/order.model";
 import UserModel from "../models/user.model";
 import OrderDetailModel from "../models/orderDetails.model";
 import ItemModel from "../models/item.model";
+import sequelize from "../db";
 
 
 export const saveOrder = async (req:express.Request,res:express.Response) => {
     try{
 
 
-        console.log(req.body)
-        ///////////////////////////////////////////////////////////////////
+        await sequelize.transaction(async (transaction) => {
+            console.log(req.body)
+            ///////////////////////////////////////////////////////////////////
 
-        let model = await OrderModel.create(req.body.order);
-
-
-        console.log('--------------------------------------------------')
-        console.log(model)
-
-        if(model){
+            let model = await OrderModel.create(req.body.order,{transaction});
 
 
-            let list: any[] =  req.body.details;
+            console.log('--------------------------------------------------')
+            console.log(model)
 
-            for (let value of list){
-                let newVar = await OrderDetailModel.create({
-                    item_id:value.item_id,
-                    order_id:req.body.order.order_id,
-                    qty:value.qty,
-                    total_price:value.total_price
-                });
+            if(model){
+
+
+                let list: any[] =  req.body.details;
+
+                for (let value of list){
+                    let newVar = await OrderDetailModel.create({
+                        item_id:value.item_id,
+                        order_id:req.body.order.order_id,
+                        qty:value.qty,
+                        total_price:value.total_price
+                    },{transaction});
+                }
+
+                // list.map(value => {
+                //
+                //
+                //
+                // })
+
+
+                res.status(201).json(
+                    new CustomResponse(201,"Order Saved!!",model.dataValues)
+                )
+
+
+            }else {
+                res.status(500).send(
+                    new CustomResponse(500,`Not saved Order`)
+                )
             }
-
-            // list.map(value => {
-            //
-            //
-            //
-            // })
+        })
 
 
-            res.status(201).json(
-                new CustomResponse(201,"Order Saved!!",model.dataValues)
-            )
-
-
-        }else {
-            res.status(500).send(
-                new CustomResponse(500,`Not saved Order`)
-            )
-        }
 
     }catch (error){
         console.log(error)
