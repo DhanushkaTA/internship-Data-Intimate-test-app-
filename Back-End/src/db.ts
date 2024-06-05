@@ -21,7 +21,6 @@ let sequelize = new Sequelize(
             idle: 10000
         },
         createDatabaseIfNotExist: true
-
     });
 
 sequelize.sync({force: false})

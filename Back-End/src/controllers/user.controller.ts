@@ -3,11 +3,14 @@ import {CustomResponse} from "../dtos/custom.response";
 import jwt, {Secret} from "jsonwebtoken";
 import * as process from "process";
 import UserModel from "../models/user.model";
-import {where} from "sequelize";
+import AddressModel from "../models/address.model";
 import bcrypt from "bcryptjs"
+import OrderModel from "../models/order.model";
 
 export const saveUser = async (req:express.Request ,res:any) => {
     try {
+
+
 
         let user = req.body;
 
@@ -27,6 +30,13 @@ export const saveUser = async (req:express.Request ,res:any) => {
             // console.log(model.dataValues);
 
         })
+
+        //-----------------------------------------------------
+        let newVar = await AddressModel.findAll();
+
+        console.log(newVar)
+
+        //-----------------------------------------------------
 
     }catch (error){
         res.status(500).json(
@@ -273,4 +283,91 @@ const generateToken = async (user:any,res:any)=> {
 
         }
     })
+}
+
+
+export const getUserAddress = async (req:express.Request,res:express.Response)=> {
+
+    try {
+
+        console.log("💥💥💥💥💥")
+
+        //Eager fetching
+        // let user_by_nic = await UserModel.findOne({
+        //     where: {
+        //         nic: req.params.id,
+        //     },
+        //     include: AddressModel,
+        // });
+
+        //Lazy fetching
+        const user_by_nic = await UserModel.findOne({
+            where: {
+                nic: req.params.id,
+            },
+        });
+
+        console.log(user_by_nic)
+
+        // @ts-ignore
+        console.log(await user_by_nic.getAddress())
+
+        if (user_by_nic){
+            res.status(200).json(
+                new CustomResponse(200,`Get All Users`,user_by_nic)
+            )
+        }else {
+            res.status(404).json(
+                new CustomResponse(200,`User na`)
+            )
+        }
+
+    }catch (error){
+        console.log(error)
+        res.status(500).send(
+            new CustomResponse(500,`Somthong went worng!!!`)
+        )
+    }
+
+}
+
+export const getUserOrders = async (req:express.Request,res:express.Response)=> {
+
+    try {
+
+        //Eager fetching
+        // const userWithOrders = await UserModel.findOne({
+        //     where: { nic: req.params.id },
+        //     include: OrderModel
+        // });
+        //
+        //
+        // console.log(userWithOrders)
+
+        //Lazy fetching
+        const user_by_nic = await UserModel.findOne({
+            where: {
+                nic: req.params.id,
+            },
+        });
+
+        // @ts-ignore
+        let list = await user_by_nic.getOrders();
+        console.log(list)
+
+        //to access one data
+        console.log("++++++++++++++++++++++++++")
+        console.log(list[0].dataValues)
+
+        res.status(200).json(
+            new CustomResponse(200,`Get All Users`,user_by_nic)
+        )
+
+    }catch (error){
+        console.log(error)
+        res.status(500).send(
+            new CustomResponse(500,`Somthong went worng!!!`)
+        )
+    }
+
 }

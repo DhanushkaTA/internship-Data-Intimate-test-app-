@@ -7,6 +7,9 @@ import bodyParser from "body-parser";
 import * as process from "process";
 import UserRoutes from "./routes/user.routes";
 import sequelize from "./db";
+import AddressRoutes from "./routes/address.routes";
+import ItemRoutes from "./routes/item.routes";
+import OrderRotes from "./routes/order.rotes";
 
 
 const app = express();
@@ -18,6 +21,12 @@ app.use(cors({
 app.use(bodyParser.json());
 
 app.use('/user',UserRoutes);
+
+app.use('/address',AddressRoutes);
+
+app.use('/item',ItemRoutes)
+
+app.use('/order',OrderRotes)
 
 // sequelize.sync({force: false})
 //     .then(() => {
